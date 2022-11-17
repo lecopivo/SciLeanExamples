@@ -68,7 +68,7 @@ def State.toSvg (s : State) : Svg :=
     frame := {min := ⟨-1,-1⟩, xSize := 2, width := 400, height := 400} }
 
 def State.init : State := {
-  x := ⟨0.5,0⟩
+  x := ⟨0,0⟩
   p := ⟨0,0⟩
 }
 
