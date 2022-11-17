@@ -1,0 +1,11 @@
+* SciLeanExamples
+
+  SciLean examples mainly running through widgets
+
+
+  To build:
+#+begin_src
+lake build
+pushd lean_packages/widgetKit/widget; npm i; cd ..; lake build widgets; lake build; popd
+lake build
+#+end_src
