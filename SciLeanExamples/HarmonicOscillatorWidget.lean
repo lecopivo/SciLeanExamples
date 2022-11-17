@@ -4,44 +4,10 @@ import WidgetKit.HtmlWidget
 import WidgetKit.Svg
 
 import SciLeanExamples.HarmonicOscillator
+import SciLeanExamples.WidgetUtils
 
 open Lean Widget Jsx
 open SciLean
-
-instance : ToJson ℝ where
-  toJson x := toJson x.1
-
-instance : FromJson ℝ where
-  fromJson? json :=
-    match fromJson? (α := Float) json with
-    | .error msg => .error msg
-    | .ok x => .ok ⟨x⟩
-
-namespace SciLean.PowTypeCarrier
-
-  variable {X n} {T : outParam Type} [PowType T (Fin n) X] -- [Inhabited X]
-
-  def toArray (v : X^{n}) : Array X := Id.run do
-    let mut array : Array X := Array.mkEmpty n
-    for h : i in [0:n] do
-      array := array.push v[⟨i,h.2⟩]
-    return array
-
-  instance [ToJson X] : ToJson (X^{n}) where
-    toJson v := toJson (v.toArray)
-
-  instance [FromJson X] : FromJson (X^{n}) where
-    fromJson? json := 
-      match fromJson? (α := Array X) json with
-      | .error msg => .error msg
-      | .ok array => 
-        if h : n = array.size then
-          .ok (introElem λ i => array[h ▸ i])
-        else 
-          .error "Failed to convert to json to PowType X^{n}, json size does not match `n`"
-
-end SciLean.PowTypeCarrier
-
 
 structure State where
   x : ℝ^{2}
@@ -50,7 +16,6 @@ structure State where
   k : ℝ := 10
   t : ℝ := 0
   deriving ToJson, FromJson
-
 
 def State.toSvg (s : State) : Svg :=
   let elements : Array Svg.Element := 
@@ -77,35 +42,13 @@ def State.update (s : State) (Δt : ℝ) : State :=
   let (x,p) := evolve Δt (s.x,s.p)
   {s with x := x, p := p, t := s.t + Δt}
 
-inductive ActionKind where
-  | timeout
-  | click
-  deriving ToJson, FromJson, DecidableEq
-
-structure Action where
-  -- can be 'timeout' or 'click'
-  kind : ActionKind
-  value : Json
-  deriving ToJson, FromJson
-
-structure UpdatePhysicsParams where
-  elapsed : Float
-  actions : Array Action
-  state : State
-  deriving ToJson, FromJson
-
-structure UpdatePhysicsResult where
-  html : Widget.Html
-  state : State
-  /-- Approximate number of milliseconds to wait before calling again. -/
-  callbackTime : Option Float := some 100
-  deriving ToJson, FromJson
 
 open Server RequestM in
 
 @[server_rpc_method]
-def updatePhysics (params : UpdatePhysicsParams) : RequestM (RequestTask UpdatePhysicsResult) := do
-  let Δt := ((params.elapsed / 1000).toReal - params.state.t)
+def updatePhysics (params : UpdatePhysicsParams State) : RequestM (RequestTask (UpdatePhysicsResult State)) := do
+  let new_t := params.elapsed / 1000 |>.toReal -- convert milliseconds to seconds
+  let Δt := (new_t - params.state.t)
   
   let mut state := params.state
 
@@ -133,7 +76,7 @@ def physics : UserWidgetDefinition where
   name := "Magic physics demo"
   javascript := include_str ".." / "lean_packages" / "widgetKit" / "widget" / "dist" / "physics.js"
 
-def init : UpdatePhysicsResult := {
+def init : UpdatePhysicsResult State := {
   html := <div>Init!!!</div>,
   state := State.init,
 }
