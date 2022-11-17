@@ -40,7 +40,7 @@ namespace SciLean.PowTypeCarrier
         else 
           .error "Failed to convert to json to PowType X^{n}, json size does not match `n`"
 
-end PowTypeCarrier
+end SciLean.PowTypeCarrier
 
 
 structure State where
@@ -48,7 +48,7 @@ structure State where
   p : ℝ^{2}
   m : ℝ := 1
   k : ℝ := 10
-  t : Float := 0
+  t : ℝ := 0
   deriving ToJson, FromJson
 
 
@@ -61,21 +61,21 @@ def State.toSvg (s : State) : Svg :=
             strokeColor := some ⟨1,1,1⟩ }
       |>.push 
           { shape := .circle ⟨s.x.x.1,s.x.y.1⟩ (.absolute 0.1), 
-            fillColor := let speed := 100*∥s.p∥/s.m |>.toFloat; some ⟨1-speed, speed, 0⟩, 
+            fillColor := let speed := 0.3*∥s.p∥/s.m |>.toFloat; some ⟨1-speed, speed, 0⟩, 
             clickData := some "circle"} 
 
   { elements := elements,
     frame := {min := ⟨-1,-1⟩, xSize := 2, width := 400, height := 400} }
 
 def State.init : State := {
-  x := ⟨0,0⟩
+  x := ⟨0.5,0⟩
   p := ⟨0,0⟩
 }
 
 def State.update (s : State) (Δt : ℝ) : State := 
   let evolve := (solver s.m s.k 1).val
   let (x,p) := evolve Δt (s.x,s.p)
-  {s with x := x, p := p}
+  {s with x := x, p := p, t := s.t + Δt}
 
 inductive ActionKind where
   | timeout
@@ -105,17 +105,17 @@ open Server RequestM in
 
 @[server_rpc_method]
 def updatePhysics (params : UpdatePhysicsParams) : RequestM (RequestTask UpdatePhysicsResult) := do
-  let δt := 0.3*(params.elapsed - params.state.t)
+  let Δt := ((params.elapsed / 1000).toReal - params.state.t)
   
   let mut state := params.state
 
   for action in params.actions do
     if action.kind = .click then
-      let θ := 1000 * state.t |>.toReal
+      let θ := 1000 * state.t
       let dir : ℝ^{2} := ⟨Math.cos θ, Math.sin θ⟩
-      state := { state with p := state.p + (0.01:ℝ) * state.m * dir }
+      state := { state with p := state.p +  state.m * dir }
 
-  state := state.update δt.toReal
+  state := state.update Δt
 
   return RequestTask.pure $ {
     html := <div>
@@ -123,7 +123,7 @@ def updatePhysics (params : UpdatePhysicsParams) : RequestM (RequestTask UpdateP
         {state.toSvg.toHtml}
       </div>
 
-      {toString params.elapsed} {toString <| toJson <| params.actions}</div>,
+      {toString params.elapsed} {toString Δt} {toString <| toJson <| params.actions}</div>,
     state := state,
     callbackTime := some 33,
   }
