@@ -1,7 +1,7 @@
 {"version": 2,
  "packages":
  [{"url": "https://github.com/lecopivo/SciLean",
-   "rev": "46e3967e45fa2d12615aa62f693193964a887fa2",
+   "rev": "67e6069b7b7d9cd13d844d4c58dbe4fd25374cd9",
    "name": "scilean",
    "inputRev": "master"},
   {"url": "https://github.com/leanprover-community/mathlib4",
