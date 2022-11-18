@@ -13,7 +13,7 @@ structure State (n : Nat) where
   x : ℝ^{n}
   p : ℝ^{n}
   m : ℝ := 1
-  k : ℝ := 100000
+  k : ℝ := 500000
   c : ℝ := 10000
   t : ℝ := 0
   deriving ToJson, FromJson
@@ -76,19 +76,17 @@ def updatePhysics (params : UpdatePhysicsParams (State N)) : RequestM (RequestTa
                    let d := min (Float.abs (i.1.toFloat - idx.toFloat)) <|
                             min (Float.abs (i.1.toFloat - N.toFloat - idx.toFloat))
                                 (Float.abs (i.1.toFloat + N.toFloat - idx.toFloat))
-                   let d := 30 * d / N.toFloat
+                   let d := 60 * d / N.toFloat
                    let w := Float.exp (- d*d)
-                   pi + 50 * w.toReal }
+                   pi + 100 * w.toReal }
 
   state := state.update Δt
 
   return RequestTask.pure $ {
-    html := <div>
+    html := 
       <div>
         {state.toSvg.toHtml}
-      </div>
-
-      {toString params.elapsed} {toString Δt} {toString <| toJson <| params.actions}</div>,
+      </div>,
     state := state,
     callbackTime := some 33,
   }
