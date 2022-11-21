@@ -1,7 +1,7 @@
 {"version": 2,
  "packages":
  [{"url": "https://github.com/lecopivo/SciLean",
-   "rev": "9c2060c7abe64e6f25cee290d8869be0b2fa76c8",
+   "rev": "a05f52b612b4486698c347ec18dec9fb72faa244",
    "name": "scilean",
    "inputRev": "master"},
   {"url": "https://github.com/leanprover-community/mathlib4",
@@ -17,6 +17,6 @@
    "name": "Qq",
    "inputRev": "master"},
   {"url": "https://github.com/EdAyers/WidgetKit",
-   "rev": "766ecad990db5f7aee815af147290ebe46239db0",
+   "rev": "7fc8bff8bc749b9771a4370d0645df3b13d3a6c0",
    "name": "widgetKit",
-   "inputRev": "physics"}]}
+   "inputRev": "main"}]}

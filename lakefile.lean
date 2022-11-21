@@ -7,7 +7,7 @@ package sciLeanExamples {
 
 
 require scilean from git "https://github.com/lecopivo/SciLean" @ "master"
-require widgetKit from git "https://github.com/EdAyers/WidgetKit" @ "physics"
+require widgetKit from git "https://github.com/EdAyers/WidgetKit" @ "main"
 
 
 lean_lib SciLeanExamples {
